@@ -1,161 +1,121 @@
-let deck = [];
-const suits = ['♠️', '♣️', '♥️', '♦️'];
-const values = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A'];
+const suits = ["♣️", "♥️", "♦️", "♠️"];
+const values = [
+  "2",
+  "3",
+  "4",
+  "5",
+  "6",
+  "7",
+  "8",
+  "9",
+  "10",
+  "J",
+  "Q",
+  "K",
+  "A",
+];
 
+let deck = [];
 let playerHand = [];
 let dealerHand = [];
 
-let playerTotalWin = 0;
-let dealerTotalWin= 0;
-
-let playerWin = document.getElementById('playerWin');
-let dealerWin = document.getElementById('dealerWin');
-
-const playerHandElement = document.getElementById('player-hand').querySelector('.cards');
-const dealerHandElement = document.getElementById('dealer-hand').querySelector('.cards');
-const playerValueElement = document.getElementById('player-value');
-const dealerValueElement = document.getElementById('dealer-value');
-const messageElement = document.getElementById('message');
-const hitButton = document.getElementById('hit');
-const standButton = document.getElementById('stand');
+const gameResult = document.getElementById("gameResult");
 
 function createDeck() {
-    deck = [];
-    for (let suit of suits) {
-        for (let value of values) {
-            deck.push({ value: value, suit: suit });
-        }
+  for (let suit of suits) {
+    for (let value of values) {
+      deck.push({ suit, value });
     }
+  }
 }
 
 function shuffleDeck() {
-    for (let i = deck.length - 1; i > 0; i--) {
-        let j = Math.floor(Math.random() * (i + 1));
-        [deck[i], deck[j]] = [deck[j], deck[i]];
-    }
+  for (let i = deck.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [deck[i], deck[j]] = [deck[j], deck[i]];
+  }
 }
 
 function dealCard() {
-    return deck.pop();
-}
-
-function calculateHandValue(hand){
-    let value = 0;
-    let aceCount = 0;
-    for(let card of hand){
-        if (card.value === 'J' || card.value === 'Q' || card.value === 'K') {
-            value += 10;
-        } else if (card.value === 'A') {
-            value += 11;
-            aceCount++;
-        } else {
-            value += parseInt(card.value);
-        }
-    }
-    while(value > 21 && aceCount > 0){
-        value -= 10;
-        aceCount--;
-    }
-    return value;
-}
-
-function updateHandDisplay(hand, handElement){
-    handElement.innerHTML = '';
-    hand.forEach(card => {
-        let cardElement = document.createElement('div');
-        cardElement.className = 'card';
-        cardElement.textContent = `${card.value}${card.suit}`;
-        handElement.appendChild(cardElement);
-    });
-}
-
-function startGame(){
+  if (deck.length === 0) {
     createDeck();
     shuffleDeck();
-    
-    playerHand = [dealCard(), dealCard()];
-    dealerHand = [dealCard(), dealCard()];
-
-    updateHandDisplay(playerHand, playerHandElement);
-    updateHandDisplay(dealerHand, dealerHandElement);
-
-    playerValueElement.textContent = calculateHandValue(playerHand);
-    dealerValueElement.textContent = calculateHandValue(dealerHand);
-
-    messageElement.textContent = '';
-    hitButton.disabled = false;
-    standButton.disabled = false;
+  }
+  return deck.pop();
 }
 
-function playerTurn(){
-    let playerValue = calculateHandValue(playerHand);
-    if(playerValue > 21){
-        dealerTotalWin++; 
-        playerWin.innerHTML = 'Player: ' + playerTotalWin;
-        dealerWin.innerHTML = 'Dealer: ' + dealerTotalWin;
-        messageElement.textContent = 'Oyuncu battı! Krupiye kazandı.';
-        hitButton.disabled = true;
-        standButton.disabled = true;
-        return;
-    }
+function startGame() {
+  gameResult.innerHTML = "";
+  createDeck();
+  shuffleDeck();
 
-    let action = prompt ("Kart çekmek ister misiniz (c) yoksa durmak mı (d)?");
-    if (action.toLowerCase() === 'c') {
-        playerHand.push(dealCard());
-        updateHandDisplay(playerHand, playerHandElement);
-        playerValueElement.textContent = calculateHandValue(playerHand);
-        playerTurn();
-    } else if (action.toLowerCase() === 'd') {
-        dealerTurn();
-    }
+  playerHand = [dealCard(), dealCard()];
+  dealerHand = [dealCard(), dealCard()];
+
+  updateDisplay(playerHand, dealerHand);
 }
 
-function dealerTurn() {
-    let dealerValue = calculateHandValue(dealerHand);
-    while (dealerValue < 17) {
-        dealerHand.push(dealCard());
-        dealerValue = calculateHandValue(dealerHand);
-    }
-    
-    updateHandDisplay(dealerHand, dealerHandElement);
-    dealerValueElement.textContent = dealerValue;
+function hit() {
+  playerHand.push(dealCard());
+  updateDisplay(playerHand, dealerHand);
 
-    determineWinner();
+  if (getScore(playerHand) > 21) {
+    gameResult.innerHTML = "Bust! You lose.";
+    return;
+  }
 }
 
-function determineWinner() {
-    let playerValue = calculateHandValue(playerHand);
-    let dealerValue = calculateHandValue(dealerHand);
+function stand() {
+  while (getScore(dealerHand) < 17) {
+    dealerHand.push(dealCard());
+    updateDisplay(playerHand, dealerHand);
+  }
+  if (getScore(dealerHand) > 21) {
+    gameResult.innerHTML = "Dealer busts! You win!";
+    return;
+  } else if (getScore(playerHand) > getScore(dealerHand)) {
+    gameResult.innerHTML = "You win!";
+  } else if (getScore(playerHand) < getScore(dealerHand)) {
+    gameResult.innerHTML = "You lose.";
+  } else {
+    gameResult.innerHTML = "It's a tie!";
+  }
+  updateDisplay(playerHand, dealerHand);
+}
 
-    if (dealerValue > 21 || playerValue > dealerValue) {
-        messageElement.textContent = 'Oyuncu kazandı!';
-        playerTotalWin++; 
-        playerWin.innerHTML = 'Player: ' + playerTotalWin;
-        dealerWin.innerHTML = 'Dealer: ' + dealerTotalWin;
-    } else if (playerValue < dealerValue) {
-        messageElement.textContent = 'Krupiye kazandı!';
-        dealerTotalWin++; 
-        playerWin.innerHTML = 'Player: ' + playerTotalWin;
-        dealerWin.innerHTML = 'Dealer: ' + dealerTotalWin;
+function getScore(hand) {
+  let score = 0;
+  let hasAce = false;
+  for (let card of hand) {
+    if (card.value === "A") {
+      hasAce = true;
+      score += 11;
+    } else if (card.value === "J" || card.value === "Q" || card.value === "K") {
+      score += 10;
     } else {
-        messageElement.textContent = 'Berabere!';
-        playerWin.innerHTML = 'Player: ' + playerTotalWin;
-        dealerWin.innerHTML = 'Dealer: ' + dealerTotalWin;
+      score += parseInt(card.value);
     }
-
-    hitButton.disabled = true;
-    standButton.disabled = true;
+  }
+  if (hasAce && score > 21) {
+    score -= 10;
+  }
+  return score;
 }
 
-document.getElementById('start-game').addEventListener('click', startGame);
-hitButton.addEventListener('click', () => {
-    playerHand.push(dealCard());
-    updateHandDisplay(playerHand, playerHandElement);
-    playerValueElement.textContent = calculateHandValue(playerHand);
-    if (calculateHandValue(playerHand) > 21) {
-        messageElement.textContent = 'Oyuncu battı! Krupiye kazandı.';
-        hitButton.disabled = true;
-        standButton.disabled = true;
-    }
-});
-standButton.addEventListener('click', dealerTurn);
+function updateDisplay(playerHand, dealerHand) {
+  let playerScore = getScore(playerHand);
+  let dealerScore = getScore(dealerHand);
+
+  let playerHandString = playerHand
+    .map((card) => `${card.value}${card.suit}`)
+    .join(" ");
+  let dealerHandString = dealerHand
+    .map((card) => `${card.value}${card.suit}`)
+    .join(" ");
+
+  document.getElementById("playerHand").innerHTML = playerHandString;
+  document.getElementById("playerScore").innerHTML = playerScore;
+
+  document.getElementById("dealerHand").innerHTML = dealerHandString;
+  document.getElementById("dealerScore").innerHTML = dealerScore;
+}
