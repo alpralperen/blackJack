@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blackjack Oyunu</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <p id="playerWin">Player: 0</p>
+    <p id="dealerWin">Dealer: 0</p>
+    <div class="container">
+        <h1>Blackjack</h1>
+        <div class="game-area">
+            <div class="hand" id="player-hand">
+                <h2>Player Hand</h2>
+                <div class="cards"></div>
+                <div class="value" id="player-value"></div>
+            </div>
+            <div class="hand" id="dealer-hand">
+                <h2>Dealer Hand</h2>
+                <div class="cards"></div>
+                <div class="value" id="dealer-value"></div>
+            </div>
+        </div>
+        <div class="controls">
+            <button id="start-game">Start Game</button>
+            <button id="hit" disabled>HIT</button>
+            <button id="stand" disabled>STAND</button>
+        </div>
+        <div class="message" id="message"></div>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
